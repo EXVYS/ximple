@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 const ROOT = __dirname;
 
@@ -44,11 +44,21 @@ function serveFile(filePath, res) {
   });
 }
 
+const CSP = "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:";
+
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Service-Worker-Allowed', '/');
+  res.setHeader('Content-Security-Policy', CSP);
 
   let urlPath = req.url.split('?')[0];
+
+  if (urlPath === '/favicon.ico') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   if (urlPath === '/') urlPath = '/index.html';
 
   const filePath = path.join(ROOT, urlPath);
